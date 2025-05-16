@@ -43,9 +43,10 @@ for step in pass1 pass2 pass3; do
                 parted -s $srchdinfo rm $i
               done
             fi
-            diskavaliable=$(parted -s $srchdinfo unit b print free | awk '/Free Space$/ {end=$3} END{print end}' | sed 's/B$//')
+            diskavaliable=$(parted -s $srchdinfo unit b print free | awk '/Free Space$/ {gsub(/B/,"",$1); gsub(/B/,"",$2); sum+=$2-$1+1} END {print sum}')
+            #diskavaliable=$(parted -s $srchdinfo unit b print free | awk '/Free Space$/ {end=$3} END{print end}' | sed 's/B$//')
             #find /osmnt -mindepth 1 ! -path /osmnt/"$filepathinfo"/1.gz ! -path /osmnt/"$filepathinfo" ! -path /osmnt/"$filepathinfo"/* -exec rm -rf {} +
-            partavaliable=$(df -B1 | grep "$srchdinfo$srcptinfo" | awk '{print ($3 > $4 ? $3 : $4)}')
+            partavaliable=$(df -B1 /osmnt | awk 'NR==2 {print $4}')
             logger -t pass1 filesize:$filesize byte,disksize:$disksize byte,ptsize:$ptsize byte,diskavaliable:$diskavaliable byte,partavaliable:$partavaliable byte
 
             if [ $diskavaliable -ge $filesize ]; then
